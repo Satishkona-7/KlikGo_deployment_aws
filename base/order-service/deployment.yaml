@@ -2,14 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: order-service
-  namespace: ecommerce
+  namespace: klikgo
   labels:
     app: order-service
 spec:
   replicas: 1
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
   selector:
     matchLabels:
       app: order-service
+
   template:
     metadata:
       labels:
@@ -17,24 +25,24 @@ spec:
     spec:
       containers:
         - name: order-service
-          image: order-service:latest
-          imagePullPolicy: IfNotPresent
+          image: klikgoacr.azurecr.io/order-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8002
 
           envFrom:
             - configMapRef:
                 name: order-service-config
+            - secretRef:
+                name: order-service-secret
 
-          env:
-            - name: MONGO_URI
-              value: "mongodb://admin:satish123@mongodb:27017"
-            - name: JWT_SECRET_KEY
-              value: "change-this-secret-key"
-            - name: PRODUCT_SERVICE_URL
-              value: "http://product-service:8001/api/v1"
-            - name: PAYMENT_SERVICE_URL
-              value: "http://payment-service:8003/api/v1"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
 
           readinessProbe:
             httpGet:

@@ -2,10 +2,11 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mongodb-pvc
-  namespace: ecommerce
+  namespace: klikgo
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: default
   resources:
     requests:
       storage: 5Gi

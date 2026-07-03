@@ -2,14 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-service
-  namespace: ecommerce
+  namespace: klikgo
   labels:
     app: auth-service
 spec:
   replicas: 1
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
   selector:
     matchLabels:
       app: auth-service
+
   template:
     metadata:
       labels:
@@ -17,20 +25,24 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: auth-service:latest
-          imagePullPolicy: IfNotPresent
+          image: klikgoacr.azurecr.io/auth-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
 
           envFrom:
             - configMapRef:
                 name: auth-service-config
+            - secretRef:
+                name: auth-service-secret
 
-          env:
-            - name: MONGO_URI
-              value: "mongodb://admin:satish123@mongodb:27017"
-            - name: JWT_SECRET_KEY
-              value: "change-this-secret-key"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
 
           readinessProbe:
             httpGet:
