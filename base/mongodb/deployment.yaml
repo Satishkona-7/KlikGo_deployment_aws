@@ -21,21 +21,16 @@ spec:
           ports:
             - containerPort: 27017
 
-          env:
-            - name: MONGO_INITDB_ROOT_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-secret
-                  key: MONGO_INITDB_ROOT_USERNAME
-            - name: MONGO_INITDB_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-secret
-                  key: MONGO_INITDB_ROOT_PASSWORD
+          envFrom:
+            - secretRef:
+                name: mongodb-secrets
 
           volumeMounts:
             - name: mongodb-data
               mountPath: /data/db
+            - name: secrets-store-inline
+              mountPath: /mnt/secrets-store
+              readOnly: true
 
           resources:
             requests:
@@ -63,5 +58,10 @@ spec:
 
       volumes:
         - name: mongodb-data
-          persistentVolumeClaim:
-            claimName: mongodb-pvc
+          emptyDir: {}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: mongodb-spc

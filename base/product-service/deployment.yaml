@@ -34,8 +34,12 @@ spec:
             - configMapRef:
                 name: product-service-config
             - secretRef:
-                name: product-service-secret
-
+                name: product-service-secrets
+                
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
           resources:
             requests:
               cpu: "100m"
@@ -61,3 +65,10 @@ spec:
             periodSeconds: 20
             timeoutSeconds: 3
             failureThreshold: 3
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: product-service-spc
